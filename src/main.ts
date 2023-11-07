@@ -43,9 +43,9 @@ sensorButton.addEventListener("click", () => {
     });
 });
 
-let points = 0;
+let coins = 0;
 const statusPanel = document.querySelector<HTMLDivElement>("#statusPanel")!;
-statusPanel.innerHTML = "No points yet...";
+statusPanel.innerHTML = "No coins yet...";
 
 function makePit(i: number, j: number) {
     const bounds = leaflet.latLngBounds([
@@ -63,14 +63,21 @@ function makePit(i: number, j: number) {
         let value = Math.floor(luck([i, j, "initialValue"].toString()) * 100);
         const container = document.createElement("div");
         container.innerHTML = `
-                <div>There is a pit here at "${i},${j}". It has value <span id="value">${value}</span>.</div>
-                <button id="poke">poke</button>`;
+                <div>There is a pit here at "${i},${j}". It has <span id="value">${value}</span> coins.</div>
+                <button id="poke">take</button>
+                <button id="leave">put</button>`;
         const poke = container.querySelector<HTMLButtonElement>("#poke")!;
+        const leave = container.querySelector<HTMLButtonElement>("#leave")!;
         poke.addEventListener("click", () => {
             value--;
             container.querySelector<HTMLSpanElement>("#value")!.innerHTML = value.toString();
-            points++;
-            statusPanel.innerHTML = `${points} points accumulated`;
+            coins++;
+            statusPanel.innerHTML = `${coins} coins accumulated`;
+        });
+        leave.addEventListener("click", () => {
+            container.querySelector<HTMLSpanElement>("#value")!.innerHTML = value.toString();
+            value++;
+            coins--;
         });
         return container;
     });
