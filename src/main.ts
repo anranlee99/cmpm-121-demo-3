@@ -3,6 +3,7 @@ import "./style.css";
 import leaflet from "leaflet";
 import luck from "./luck";
 import "./leafletWorkaround";
+import { getCache } from "./geocache";
 
 
 const MERRILL_CLASSROOM = leaflet.latLng({
@@ -43,9 +44,7 @@ sensorButton.addEventListener("click", () => {
     });
 });
 
-let coins = 0;
-const statusPanel = document.querySelector<HTMLDivElement>("#statusPanel")!;
-statusPanel.innerHTML = "No coins yet...";
+
 
 function makePit(i: number, j: number) {
     const bounds = leaflet.latLngBounds([
@@ -57,29 +56,8 @@ function makePit(i: number, j: number) {
 
     const pit = leaflet.rectangle(bounds) as leaflet.Layer;
 
-
-
     pit.bindPopup(() => {
-        let value = Math.floor(luck([i, j, "initialValue"].toString()) * 100);
-        const container = document.createElement("div");
-        container.innerHTML = `
-                <div>There is a pit here at "${i},${j}". It has <span id="value">${value}</span> coins.</div>
-                <button id="poke">take</button>
-                <button id="leave">put</button>`;
-        const poke = container.querySelector<HTMLButtonElement>("#poke")!;
-        const leave = container.querySelector<HTMLButtonElement>("#leave")!;
-        poke.addEventListener("click", () => {
-            value--;
-            container.querySelector<HTMLSpanElement>("#value")!.innerHTML = value.toString();
-            coins++;
-            statusPanel.innerHTML = `${coins} coins accumulated`;
-        });
-        leave.addEventListener("click", () => {
-            container.querySelector<HTMLSpanElement>("#value")!.innerHTML = value.toString();
-            value++;
-            coins--;
-        });
-        return container;
+        return getCache(i, j);
     });
     pit.addTo(map);
 }
