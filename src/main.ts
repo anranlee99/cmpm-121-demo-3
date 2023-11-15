@@ -17,12 +17,14 @@ leaflet.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const playerMarker = leaflet.marker(settings.PLAYER_ORIGIN).addTo(map);
 playerMarker.bindTooltip("That's you!");
-
+const latlngs: leaflet.LatLngExpression[] = JSON.parse(localStorage.playerPath as string?? "[]") as leaflet.LatLngExpression[];
 const sensorButton = document.querySelector("#sensor")!;
 function queryPlayerPos() {
     navigator.geolocation.watchPosition((position) => {
         settings.PLAYER_ORIGIN.lat = position.coords.latitude;
         settings.PLAYER_ORIGIN.lng = position.coords.longitude;
+        
+        // const polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
         updateCachesInView();
     }); 
 }
@@ -64,6 +66,9 @@ const pitsOnMap = new Map<string, leaflet.Layer>();
 
 
 function updateCachesInView() {
+    latlngs.push([settings.PLAYER_ORIGIN.lat, settings.PLAYER_ORIGIN.lng]);
+    leaflet.polyline(latlngs, { stroke: true, color: "red", }).addTo(map);
+    localStorage.playerPath = JSON.stringify(latlngs);
     map.setView(settings.PLAYER_ORIGIN);
     playerMarker.setLatLng(settings.PLAYER_ORIGIN);
     const bounds = map.getBounds();
@@ -101,4 +106,5 @@ function makePit(i: number, j: number) {
         pitsOnMap.set(key, pit);
     }
 }
-updateCachesInView();
+
+// updateCachesInView();
