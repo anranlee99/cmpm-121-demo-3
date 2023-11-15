@@ -19,14 +19,22 @@ const playerMarker = leaflet.marker(settings.PLAYER_ORIGIN).addTo(map);
 playerMarker.bindTooltip("That's you!");
 
 const sensorButton = document.querySelector("#sensor")!;
-sensorButton.addEventListener("click", () => {
+function queryPlayerPos() {
     navigator.geolocation.watchPosition((position) => {
         settings.PLAYER_ORIGIN.lat = position.coords.latitude;
         settings.PLAYER_ORIGIN.lng = position.coords.longitude;
         updateCachesInView();
-    });
+    }); 
+}
+//do this at startup to get the player's location
+queryPlayerPos();
+sensorButton.addEventListener("click", () => {
+    queryPlayerPos();
 });
-
+const resetButton = document.querySelector("#reset")!;
+resetButton.addEventListener("click", () => {
+    prompt("Are you sure you want to erase all progress? Type 'yes' to confirm.") === "yes" && localStorage.clear();
+});
 const southButton = document.querySelector("#south")!;
 southButton.addEventListener("click", () => {
     const currentLatLng = playerMarker.getLatLng();
@@ -72,11 +80,8 @@ function updateCachesInView() {
     // Add new pits
     for (let i = -settings.NEIGHBORHOOD_SIZE; i < settings.NEIGHBORHOOD_SIZE; i++) {
         for (let j = -settings.NEIGHBORHOOD_SIZE; j < settings.NEIGHBORHOOD_SIZE; j++) {
-            // const cacheLatLngExpressions = settings.getBounds(i, j);
-            // const cacheBounds = leaflet.latLngBounds(cacheLatLngExpressions);
             const lat = parseFloat((settings.PLAYER_ORIGIN.lat + i * settings.TILE_DEGREES).toFixed(4));
             const lng = parseFloat((settings.PLAYER_ORIGIN.lng + j * settings.TILE_DEGREES).toFixed(4));
-            console.log(lat, lng);
             const cacheBounds = leaflet.latLngBounds(settings.getBounds(lat, lng));
             if (bounds.intersects(cacheBounds) && luck([lat,lng].toString()) < settings.PIT_SPAWN_PROBABILITY) {
                 makePit(lat, lng);
@@ -87,9 +92,7 @@ function updateCachesInView() {
 }
 
 function makePit(i: number, j: number) {
-    // const key = `${i},${j}`;
     const bounds = leaflet.latLngBounds(settings.getBounds(i, j));
-    // const key = `${Math.floor(bounds.getCenter().lat )},${Math.floor(bounds.getCenter().lng )}`;
     const key = `${i},${j}`;
     if (!pitsOnMap.has(key)) {
         const pit = leaflet.rectangle(bounds, { color: "#ff7800", weight: 1 });
